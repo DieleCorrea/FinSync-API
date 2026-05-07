@@ -1,4 +1,4 @@
 package com.financas.tema1.ai;
 
-public record AiInsightRequest(Long userId, String question) {
+public record AiInsightRequest(String question) {
 }

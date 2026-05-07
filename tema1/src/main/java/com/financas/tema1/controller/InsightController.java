@@ -1,8 +1,8 @@
 package com.financas.tema1.controller;
 
-import com.financas.tema1.application.IngestionService;
+import com.financas.tema1.service.IngestionService;
 import com.financas.tema1.domain.User;
-import com.financas.tema1.infrastructure.UserRepository;
+import com.financas.tema1.repository.UserRepository;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;

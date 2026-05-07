@@ -3,6 +3,7 @@ package com.financas.tema1.application;
 import com.financas.tema1.domain.Category;
 import com.financas.tema1.domain.Transaction;
 import com.financas.tema1.domain.User;
+import com.financas.tema1.transaction.TransactionType;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -18,12 +19,13 @@ public class TransactionNormalizer {
         this.categoryStrategy = categoryStrategy;
     }
 
+
     public Transaction normalizeRawData(String rawDescription, BigDecimal rawAmount, String rawCategory, String rawDate, String source, User user) {
         Category category = categoryStrategy.normalize(rawCategory);
+        LocalDate date = LocalDate.parse(rawDate, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDate date = LocalDate.parse(rawDate, formatter);
+        TransactionType type = TransactionType.EXPENSE;
 
-        return new Transaction(rawDescription, rawAmount, category, date, source, user);
+        return new Transaction(rawDescription, rawAmount, category, date, type, user);
     }
 }

@@ -1,4 +1,4 @@
-package com.financas.tema1.infrastructure;
+package com.financas.tema1.repository;
 
 import com.financas.tema1.domain.User;
 import org.springframework.data.jpa.repository.JpaRepository;

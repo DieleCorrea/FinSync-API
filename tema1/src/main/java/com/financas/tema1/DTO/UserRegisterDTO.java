@@ -1,4 +1,4 @@
-package com.financas.tema1.application;
+package com.financas.tema1.DTO;
 
 public class UserRegisterDTO {
     private String email;
