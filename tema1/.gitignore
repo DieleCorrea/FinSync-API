@@ -5,7 +5,6 @@ target/
 !**/src/test/**/target/
 
 ### Configurações Sensíveis ###
-**/src/main/resources/application.properties
 **/src/main/resources/application.yml
 .env
 
