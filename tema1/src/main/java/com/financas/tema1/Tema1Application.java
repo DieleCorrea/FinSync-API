@@ -8,7 +8,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class Tema1Application {
 
     public static void main(String[] args) {
-        // Dotenv ANTES do Spring subir
+
         Dotenv dotenv = Dotenv.configure()
                 .ignoreIfMissing()
                 .load();
