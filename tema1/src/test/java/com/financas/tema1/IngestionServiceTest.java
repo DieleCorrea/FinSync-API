@@ -1,10 +1,11 @@
-package com.financas.tema1.service;
+package com.financas.tema1;
 
 import com.financas.tema1.application.TransactionNormalizer;
 import com.financas.tema1.domain.Category;
 import com.financas.tema1.domain.Transaction;
 import com.financas.tema1.domain.User;
 import com.financas.tema1.repository.TransactionRepository;
+import com.financas.tema1.service.IngestionService;
 import com.financas.tema1.transaction.TransactionType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -67,7 +68,6 @@ class IngestionServiceTest {
     @Test
     @DisplayName("Deve ignorar transações duplicadas")
     void shouldSkipDuplicateTransactions() {
-        // Ambas são duplicatas
         when(transactionRepository.existsByDescriptionAndAmountAndDateAndUser(
                 anyString(), any(), any(), any())).thenReturn(true);
 
@@ -81,7 +81,6 @@ class IngestionServiceTest {
     @Test
     @DisplayName("Deve ingerir somente transações não duplicadas quando há mistura")
     void shouldIngestOnlyNonDuplicates() {
-        // Conta de Luz é duplicata, Supermercado não é
         when(transactionRepository.existsByDescriptionAndAmountAndDateAndUser(
                 eq("Conta de Luz"), any(), any(), any())).thenReturn(true);
         when(transactionRepository.existsByDescriptionAndAmountAndDateAndUser(
@@ -131,7 +130,6 @@ class IngestionServiceTest {
         );
     }
 
-    // Helper
     private Transaction buildTransaction(String description, String amount, Category category) {
         Transaction t = new Transaction();
         t.setDescription(description);

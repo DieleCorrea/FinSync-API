@@ -1,5 +1,7 @@
-package com.financas.tema1.application;
+package com.financas.tema1;
 
+import com.financas.tema1.application.CategoryStrategy;
+import com.financas.tema1.application.TransactionNormalizer;
 import com.financas.tema1.domain.Category;
 import com.financas.tema1.domain.Transaction;
 import com.financas.tema1.domain.User;

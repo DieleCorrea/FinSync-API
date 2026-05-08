@@ -1,10 +1,10 @@
-package com.financas.tema1.application;
+package com.financas.tema1;
 
 import com.financas.tema1.domain.Category;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
+import com.financas.tema1.application.DefaultCategoryStrategy;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class DefaultCategoryStrategyTest {
@@ -15,8 +15,6 @@ class DefaultCategoryStrategyTest {
     void setUp() {
         strategy = new DefaultCategoryStrategy();
     }
-
-    // --- NULL / EMPTY ---
 
     @Test
     @DisplayName("Deve retornar OTHER quando rawCategory for null")
@@ -29,8 +27,6 @@ class DefaultCategoryStrategyTest {
     void shouldReturnOtherWhenEmpty() {
         assertThat(strategy.normalize("")).isEqualTo(Category.OTHER);
     }
-
-    // --- FOOD ---
 
     @Test
     @DisplayName("Deve retornar FOOD para 'food'")
@@ -62,8 +58,6 @@ class DefaultCategoryStrategyTest {
         assertThat(strategy.normalize("DRINK")).isEqualTo(Category.FOOD);
     }
 
-    // --- TRANSPORT ---
-
     @Test
     @DisplayName("Deve retornar TRANSPORT para 'transport'")
     void shouldReturnTransportForTransport() {
@@ -88,7 +82,6 @@ class DefaultCategoryStrategyTest {
         assertThat(strategy.normalize("Uber99")).isEqualTo(Category.TRANSPORT);
     }
 
-    // --- ENTERTAINMENT ---
 
     @Test
     @DisplayName("Deve retornar ENTERTAINMENT para 'entertain'")
@@ -114,7 +107,6 @@ class DefaultCategoryStrategyTest {
         assertThat(strategy.normalize("ENTERTAINMENT")).isEqualTo(Category.ENTERTAINMENT);
     }
 
-    // --- OTHER ---
 
     @Test
     @DisplayName("Deve retornar OTHER para categoria desconhecida")

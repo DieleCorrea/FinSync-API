@@ -31,12 +31,12 @@ public class Transaction {
 
 
     public Transaction(String description, BigDecimal amount, Category category, LocalDate date, TransactionType type, User user) {
-        this.description = description; // Salva a descrição no banco
-        this.amount = amount;           // Salva o valor
-        this.category = category;       // Salva a categoria
-        this.date = date;               // Salva a data na coluna 'transaction_date'
-        this.type = type;               // Salva se é Entrada ou Saída
-        this.user = user;               // Salva o ID do usuário
+        this.description = description;
+        this.amount = amount;
+        this.category = category;
+        this.date = date;
+        this.type = type;
+        this.user = user;
     }
 
     public Long getId() {

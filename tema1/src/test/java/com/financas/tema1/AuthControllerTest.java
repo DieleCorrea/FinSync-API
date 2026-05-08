@@ -1,7 +1,8 @@
-package com.financas.tema1.controller;
+package com.financas.tema1;
 
 import com.financas.tema1.DTO.UserRegisterDTO;
 import com.financas.tema1.DTO.UserResponseDTO;
+import com.financas.tema1.controller.AuthController;
 import com.financas.tema1.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -53,8 +54,9 @@ class AuthControllerTest {
         ResponseEntity<UserResponseDTO> response = authController.register(dto);
 
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getEmail()).isEqualTo("user@email.com");
-        assertThat(response.getBody().getId()).isEqualTo(1L);
+
+        assertThat(response.getBody().email()).isEqualTo("user@email.com");
+        assertThat(response.getBody().id()).isEqualTo(1L);
     }
 
     @Test

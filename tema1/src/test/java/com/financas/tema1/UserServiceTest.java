@@ -1,9 +1,10 @@
-package com.financas.tema1.service;
+package com.financas.tema1;
 
 import com.financas.tema1.DTO.UserRegisterDTO;
 import com.financas.tema1.DTO.UserResponseDTO;
 import com.financas.tema1.domain.User;
 import com.financas.tema1.repository.UserRepository;
+import com.financas.tema1.service.UserService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,8 +36,6 @@ class UserServiceTest {
     @InjectMocks
     private UserService userService;
 
-    // --- registerUser ---
-
     @Test
     @DisplayName("Deve registrar usuário com senha criptografada")
     void shouldRegisterUserWithEncodedPassword() {
@@ -47,7 +46,6 @@ class UserServiceTest {
         User savedUser = new User();
         savedUser.setEmail("user@email.com");
         savedUser.setPassword("$2a$encoded");
-        // Simula ID gerado pelo banco
         try {
             var idField = User.class.getDeclaredField("id");
             idField.setAccessible(true);
@@ -58,7 +56,7 @@ class UserServiceTest {
 
         UserResponseDTO response = userService.registerUser(dto);
 
-        assertThat(response.getEmail()).isEqualTo("user@email.com");
+        assertThat(response.email()).isEqualTo("user@email.com");
         verify(passwordEncoder).encode("senha123");
         verify(userRepository).save(any(User.class));
     }
@@ -82,7 +80,6 @@ class UserServiceTest {
         assertThat(captor.getValue().getPassword()).isEqualTo("$2a$hashed");
     }
 
-    // --- loadUserByUsername ---
 
     @Test
     @DisplayName("Deve carregar UserDetails pelo email com sucesso")

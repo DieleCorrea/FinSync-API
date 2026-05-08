@@ -1,10 +1,11 @@
-package com.financas.tema1.service;
+package com.financas.tema1;
 
 import com.financas.tema1.ai.AiInsightResponse;
 import com.financas.tema1.domain.Category;
 import com.financas.tema1.domain.Transaction;
 import com.financas.tema1.domain.User;
 import com.financas.tema1.repository.TransactionRepository;
+import com.financas.tema1.service.FinancialAiService;
 import com.financas.tema1.transaction.TransactionType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -43,7 +44,6 @@ class FinancialAiServiceTest {
     @Mock
     private ChatClient.CallResponseSpec callSpec;
 
-    // Instanciado manualmente no setUp — NÃO usa @InjectMocks
     private FinancialAiService financialAiService;
 
     private User user;
@@ -53,13 +53,10 @@ class FinancialAiServiceTest {
         user = new User();
         user.setEmail("user@test.com");
 
-        // O construtor de FinancialAiService chama chatClientBuilder.build()
-        // Precisa configurar ANTES de instanciar o service
         when(chatClientBuilder.build()).thenReturn(chatClient);
 
         financialAiService = new FinancialAiService(chatClientBuilder, transactionRepository);
 
-        // Configura a fluent API do ChatClient
         when(chatClient.prompt()).thenReturn(requestSpec);
         when(requestSpec.system(anyString())).thenReturn(requestSpec);
         when(requestSpec.user(any(Consumer.class))).thenReturn(requestSpec);
@@ -119,7 +116,6 @@ class FinancialAiServiceTest {
         assertThat(response.answer()).contains("4950");
     }
 
-    // Helper
     private Transaction buildTransaction(String description, String amount,
                                           TransactionType type, Category category) {
         Transaction t = new Transaction();
