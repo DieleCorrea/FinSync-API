@@ -1,7 +1,9 @@
 package com.financas.tema1.service;
 
 import java.math.BigDecimal;
-import java.util.List;
+import java.time.LocalDate;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import com.financas.tema1.ai.AiInsightResponse;
 import com.financas.tema1.domain.Transaction;
@@ -24,6 +26,13 @@ public class FinancialAiService {
 
     public AiInsightResponse answer(Long userId, String question) {
         List<Transaction> transactions = transactionRepository.findByUserIdOrderByDateDesc(userId);
+        
+        // Filtrar últimos 30 dias + normalizar + deduplicar
+        final List<Transaction> filteredAndProcessed = deduplicateTransactions(
+            normalizeTransactions(
+                filterLast30Days(transactions)
+            )
+        );
 
         String answer = chatClient.prompt()
                 .system("""
@@ -42,11 +51,48 @@ public class FinancialAiService {
 								{context}
 								""")
                         .param("question", question)
-                        .param("context", buildContext(transactions)))
+                        .param("context", buildContext(filteredAndProcessed)))
                 .call()
                 .content();
 
         return new AiInsightResponse(userId, question, answer);
+    }
+
+    private List<Transaction> filterLast30Days(List<Transaction> transactions) {
+        LocalDate thirtyDaysAgo = LocalDate.now().minusDays(30);
+        return transactions.stream()
+                .filter(transaction -> transaction.getDate() != null && 
+                        !transaction.getDate().isBefore(thirtyDaysAgo))
+                .collect(Collectors.toList());
+    }
+
+    private List<Transaction> normalizeTransactions(List<Transaction> transactions) {
+        return transactions.stream()
+                .peek(transaction -> {
+                    if (transaction.getDescription() != null) {
+                        transaction.setDescription(transaction.getDescription().trim());
+                    }
+                })
+                .collect(Collectors.toList());
+    }
+
+    private List<Transaction> deduplicateTransactions(List<Transaction> transactions) {
+        final Set<String> seen = new HashSet<>();
+        return transactions.stream()
+                .filter(transaction -> {
+                    String key = createDeduplicationKey(transaction);
+                    return seen.add(key);
+                })
+                .collect(Collectors.toList());
+    }
+
+    private String createDeduplicationKey(Transaction transaction) {
+        return String.format("%s|%s|%s|%s|%s",
+                transaction.getDate(),
+                transaction.getType(),
+                transaction.getCategory(),
+                transaction.getDescription() != null ? transaction.getDescription().toLowerCase().trim() : "",
+                transaction.getAmount());
     }
 
     private String buildContext(List<Transaction> transactions) {
