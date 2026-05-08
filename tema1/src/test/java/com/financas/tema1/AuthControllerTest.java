@@ -5,78 +5,104 @@ import com.financas.tema1.DTO.UserResponseDTO;
 import com.financas.tema1.controller.AuthController;
 import com.financas.tema1.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.financas.tema1.domain.User;
+import com.financas.tema1.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+import java.util.Optional;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@ExtendWith(MockitoExtension.class)
+@WebMvcTest(AuthController.class)
+@Import(com.financas.tema1.config.SecurityConfig.class)
 class AuthControllerTest {
 
-    @Mock
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockitoBean
     private UserService userService;
 
-    @InjectMocks
-    private AuthController authController;
+    @MockitoBean
+    private UserRepository userRepository;
 
-    private UserRegisterDTO dto;
-    private UserResponseDTO responseDTO;
+    @MockitoBean
+    private PasswordEncoder passwordEncoder;
+
+    private ObjectMapper objectMapper;
+    private User mockUser;
 
     @BeforeEach
     void setUp() {
-        dto = new UserRegisterDTO("user@email.com", "senha123");
-        responseDTO = new UserResponseDTO(1L, "user@email.com");
+        objectMapper = new ObjectMapper();
+
+        mockUser = new User();
+        mockUser.setId(1L);
+        mockUser.setEmail("user@test.com");
+        mockUser.setPassword("encoded_password");
+    }
+
+
+    @Test
+    void register_success() throws Exception {
+        UserRegisterDTO dto = new UserRegisterDTO("user@test.com", "senha123");
+        UserResponseDTO response = new UserResponseDTO(1L, "user@test.com");
+
+        when(userService.registerUser(any(UserRegisterDTO.class))).thenReturn(response);
+
+        mockMvc.perform(post("/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1L))
+                .andExpect(jsonPath("$.email").value("user@test.com"));
     }
 
     @Test
-    @DisplayName("Deve retornar status 200 ao registrar usuário")
-    void shouldReturn200WhenRegisteringUser() {
-        when(userService.registerUser(any(UserRegisterDTO.class))).thenReturn(responseDTO);
+    void login_success() throws Exception {
+        UserRegisterDTO dto = new UserRegisterDTO("user@test.com", "senha123");
 
-        ResponseEntity<UserResponseDTO> response = authController.register(dto);
+        when(userRepository.findByEmail("user@test.com")).thenReturn(Optional.of(mockUser));
+        when(passwordEncoder.matches("senha123", "encoded_password")).thenReturn(true);
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        mockMvc.perform(post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.email").value("user@test.com"));
     }
 
     @Test
-    @DisplayName("Deve retornar o body com os dados do usuário registrado")
-    void shouldReturnUserDataInBody() {
-        when(userService.registerUser(any(UserRegisterDTO.class))).thenReturn(responseDTO);
+    void login_wrongPassword_returns401() throws Exception {
+        UserRegisterDTO dto = new UserRegisterDTO("user@test.com", "senha_errada");
 
-        ResponseEntity<UserResponseDTO> response = authController.register(dto);
+        when(userRepository.findByEmail("user@test.com")).thenReturn(Optional.of(mockUser));
+        when(passwordEncoder.matches("senha_errada", "encoded_password")).thenReturn(false);
 
-        assertThat(response.getBody()).isNotNull();
-
-        assertThat(response.getBody().email()).isEqualTo("user@email.com");
-        assertThat(response.getBody().id()).isEqualTo(1L);
+        mockMvc.perform(post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
-    @DisplayName("Deve delegar o registro para o UserService")
-    void shouldDelegateToUserService() {
-        when(userService.registerUser(any(UserRegisterDTO.class))).thenReturn(responseDTO);
+    void login_userNotFound_returns401() throws Exception {
+        UserRegisterDTO dto = new UserRegisterDTO("naoexiste@test.com", "senha123");
 
-        authController.register(dto);
+        when(userRepository.findByEmail("naoexiste@test.com")).thenReturn(Optional.empty());
 
-        verify(userService, times(1)).registerUser(dto);
-    }
-
-    @Test
-    @DisplayName("Deve chamar registerUser exatamente uma vez")
-    void shouldCallRegisterUserOnlyOnce() {
-        when(userService.registerUser(any())).thenReturn(responseDTO);
-
-        authController.register(dto);
-
-        verify(userService, times(1)).registerUser(any());
-        verifyNoMoreInteractions(userService);
+        mockMvc.perform(post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isUnauthorized());
     }
 }
